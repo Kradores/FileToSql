@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileToSql", "FileToSql\FileToSql.csproj", "{CDFFF70F-FA93-4A1E-A356-B2EE6508556B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDFFF70F-FA93-4A1E-A356-B2EE6508556B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDFFF70F-FA93-4A1E-A356-B2EE6508556B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDFFF70F-FA93-4A1E-A356-B2EE6508556B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDFFF70F-FA93-4A1E-A356-B2EE6508556B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {46B2C4F2-077A-4ABE-B851-C2FA26720762}
+	EndGlobalSection
+EndGlobal
