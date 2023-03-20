@@ -53,11 +53,7 @@ namespace FileToSql.Migrations
 
                     b.HasKey("Id");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
                     b.ToTable("ListPrices", (string)null);
-
-                    SqlServerEntityTypeBuilderExtensions.IsMemoryOptimized(b);
                 });
 
             modelBuilder.Entity("FileToSql.Infrastructure.Entities.PartsMaster", b =>

@@ -5,7 +5,7 @@
 namespace FileToSql.Migrations
 {
     /// <inheritdoc />
-    public partial class InitFileManagerMigration : Migration
+    public partial class InitContextMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,10 +28,8 @@ namespace FileToSql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ListPrices", x => x.Id)
-                        .Annotation("SqlServer:Clustered", false);
-                })
-                .Annotation("SqlServer:MemoryOptimized", true);
+                    table.PrimaryKey("PK_ListPrices", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "PartsMasters",
@@ -63,8 +61,7 @@ namespace FileToSql.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ListPrices")
-                .Annotation("SqlServer:MemoryOptimized", true);
+                name: "ListPrices");
 
             migrationBuilder.DropTable(
                 name: "PartsMasters")

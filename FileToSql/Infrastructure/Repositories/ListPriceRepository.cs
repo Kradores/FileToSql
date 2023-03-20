@@ -1,4 +1,5 @@
 ﻿using FileToSql.Infrastructure.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FileToSql.Infrastructure.Repositories;
 
@@ -27,5 +28,15 @@ public class ListPriceRepository
         {
             o.AutoMapOutputDirection = false;
         });
+    }
+
+    public async Task<IEnumerable<ListPrice>> GetListPrices(int pageNumber, int pageSize, string search)
+    {
+        return await _dbContext.ListPrices
+                .OrderBy(x => x.PartNumber)
+                .Where(x => x.PartNumber.Contains(search))
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
     }
 }

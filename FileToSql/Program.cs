@@ -28,8 +28,14 @@ namespace FileToSql
             app.MapPost("/upload/bulk/listprice", UploadBulkListHandler);
             app.MapPost("/upload/bulk/parallel/listprice", UploadBulkParallelListHandler);
             app.MapPost("/upload/bulk/ext/listprice", UploadBulkExListHandler);
+            app.MapGet("listprice", GetListPrice);
 
             app.Run();
+        }
+
+        private static async Task<IEnumerable<ListPrice>> GetListPrice(int pageNumber, int pageSize, string search, ListPriceRepository repository)
+        {
+            return await repository.GetListPrices(pageNumber, pageSize, search);
         }
 
         private static async Task<IResult> UploadBulkPartsHandler(HttpContext context, PartsMasterRepository repository)

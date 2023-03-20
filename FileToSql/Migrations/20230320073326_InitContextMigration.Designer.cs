@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FileToSql.Migrations
 {
     [DbContext(typeof(FileManagerDbContext))]
-    [Migration("20230317172056_InitFileManagerMigration")]
-    partial class InitFileManagerMigration
+    [Migration("20230320073326_InitContextMigration")]
+    partial class InitContextMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,11 +56,7 @@ namespace FileToSql.Migrations
 
                     b.HasKey("Id");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
                     b.ToTable("ListPrices", (string)null);
-
-                    SqlServerEntityTypeBuilderExtensions.IsMemoryOptimized(b);
                 });
 
             modelBuilder.Entity("FileToSql.Infrastructure.Entities.PartsMaster", b =>

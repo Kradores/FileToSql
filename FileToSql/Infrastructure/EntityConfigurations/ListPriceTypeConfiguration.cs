@@ -8,7 +8,7 @@ public class ListPriceTypeConfiguration : IEntityTypeConfiguration<ListPrice>
 {
     public void Configure(EntityTypeBuilder<ListPrice> builder)
     {
-        builder.ToTable("ListPrices", t => t.IsMemoryOptimized());
+        builder.ToTable("ListPrices");
 
         builder.HasKey(x => x.Id);
     }
