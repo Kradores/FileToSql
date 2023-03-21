@@ -3,6 +3,7 @@ using FileToSql.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FileToSql.Migrations
 {
     [DbContext(typeof(FileManagerDbContext))]
-    partial class FileManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230321172903_AddFusedPriceTableMigration")]
+    partial class AddFusedPriceTableMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

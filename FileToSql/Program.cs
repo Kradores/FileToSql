@@ -1,12 +1,8 @@
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Vml.Office;
 using FileToSql.Configurations;
 using FileToSql.Infrastructure.Entities;
 using FileToSql.Infrastructure.Repositories;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Reflection.Metadata;
 
 namespace FileToSql
 {
@@ -28,9 +24,118 @@ namespace FileToSql
             app.MapPost("/upload/bulk/listprice", UploadBulkListHandler);
             app.MapPost("/upload/bulk/parallel/listprice", UploadBulkParallelListHandler);
             app.MapPost("/upload/bulk/ext/listprice", UploadBulkExListHandler);
+            app.MapPost("/upload/bulk/ext/fusion", UploadBulkExFusionHandler);
             app.MapGet("listprice", GetListPrice);
 
             app.Run();
+        }
+
+        private static async Task<IResult> UploadBulkExFusionHandler(
+            HttpContext context,
+            FusedPriceRepository fusedPriceRepository,
+            UploadedFileRepository uploadedFileRepository,
+            FactoringRulesRepository factoringRulesRepository,
+            ManufacturerRepository manufacturerRepository)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var filesData = await uploadedFileRepository.GetFilesByIdsAsync(new());
+
+            if (filesData == null) return Results.BadRequest();
+
+            var factoringRules = await factoringRulesRepository.GetRuleByFileIdsAsync(filesData.Select(x => x.Id.ToString()).ToList());
+            var manufacturer = factoringRules != null ? await manufacturerRepository.GetByIdAsync(Guid.Empty) : null;
+
+            var response = new Response();
+            response.Data.Add($"Upload started", stopwatch.Elapsed.TotalSeconds);
+
+            var files = context.Request.Form.Files;
+
+            var listPriceFile = files
+                .Where(x => x.FileName == filesData
+                    .Where(y => y.ContentType == Infrastructure.Enums.FileContentType.ListPrice).Select(y => y.Name).First()).First();
+
+            var partsMasterFile = files
+                .Where(x => x.FileName == filesData
+                    .Where(y => y.ContentType == Infrastructure.Enums.FileContentType.PartsMaster).Select(y => y.Name).First()).First();
+
+            await InsertFusedPriceFromListPriceAsync(
+                fusedPriceRepository,
+                listPriceFile.OpenReadStream(),
+                manufacturer,
+                factoringRules,
+                response,
+                stopwatch);
+
+            await UpdateFusedPriceFromPartsMasterAsync(fusedPriceRepository, partsMasterFile.OpenReadStream(), response, stopwatch);
+
+            stopwatch.Stop();
+
+            return Results.Ok(response);
+        }
+
+        private static async Task UpdateFusedPriceFromPartsMasterAsync(
+            FusedPriceRepository fusedPriceRepository,
+            Stream partsMasterStream,
+            Response response,
+            Stopwatch stopwatch)
+        {
+            // you can send as a parameter the file id and get file or stream
+            using var workbook = new XLWorkbook(partsMasterStream);
+            response.Data.Add($"Opened Parts Master", stopwatch.Elapsed.TotalSeconds);
+
+            var ws = workbook.Worksheet(1);
+            var rows = ws.RowsUsed().Skip(1);
+
+            await fusedPriceRepository.BulkMergeAsync(rows.Select(row =>
+            {
+                var cells = row.Cells(1, 11);
+
+                return new FusedPrice()
+                {
+                    PartNumber = cells.ElementAt(0).Value.GetText(),
+                    ContentType = Infrastructure.Enums.FileContentType.PartsMaster,
+                    Description = cells.ElementAt(2).Value.GetText(),
+                    Manufacturer = cells.ElementAt(6).Value.GetText(),
+                    ListPrice = cells.ElementAt(3).Value.GetNumber(),
+                    ProductType = cells.ElementAt(9).Value.ToString(),
+                };
+            }));
+
+            response.Data.Add($"Update/Insert finished", stopwatch.Elapsed.TotalSeconds);
+        }
+
+        private static async Task InsertFusedPriceFromListPriceAsync(
+            FusedPriceRepository fusedPriceRepository,
+            Stream listPriceStream,
+            Manufacturer manufacturer,
+            FactoringRules rules,
+            Response response,
+            Stopwatch stopwatch)
+        {
+            using var workbook = new XLWorkbook(listPriceStream);
+            response.Data.Add($"Opened List Price", stopwatch.Elapsed.TotalSeconds);
+
+            var ws = workbook.Worksheet(1);
+            var rows = ws.RowsUsed().Skip(1);
+
+            await fusedPriceRepository.BulkInsertAsync(rows.Select(row =>
+            {
+                var cells = row.Cells(1, 6);
+
+                return new FusedPrice()
+                {
+                    PartNumber = cells.ElementAt(0).Value.GetText(),
+                    ContentType = Infrastructure.Enums.FileContentType.ListPrice,
+                    Description = cells.ElementAt(1).Value.GetText(),
+                    Manufacturer = manufacturer.Name,
+                    ListPrice = cells.ElementAt(3).Value.GetNumber(),
+                    ProductType = cells.ElementAt(4).Value.ToString(),
+                }.ApplyFactoringRules(rules);
+            }));
+
+            response.Data.Add($"Insert finished", stopwatch.Elapsed.TotalSeconds);
         }
 
         private static async Task<IEnumerable<ListPrice>> GetListPrice(int pageNumber, int pageSize, string search, ListPriceRepository repository)
@@ -119,7 +224,7 @@ namespace FileToSql
                 var ws = workbook.Worksheet(1);
                 var rows = ws.RowsUsed().Skip(1);
 
-                await repository.BulkSaveAsync(rows.Select(row =>
+                await repository.BulkInsertAsync(rows.Select(row =>
                 {
                     var cells = row.Cells(1, 6);
 
@@ -136,7 +241,7 @@ namespace FileToSql
             }
 
             response.Data.Add($"Insert finished", stopwatch.Elapsed.TotalSeconds);
-
+            
             stopwatch.Stop();
 
             return Results.Ok(response);

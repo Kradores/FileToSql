@@ -14,11 +14,13 @@ public class FileManagerDbContext : DbContext
 
     public DbSet<PartsMaster> PartsMasters => Set<PartsMaster>();
     public DbSet<ListPrice> ListPrices => Set<ListPrice>();
+    public DbSet<FusedPrice> FusedPrices => Set<FusedPrice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new PartsMasterTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ListPriceTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new FusedPriceTypeConfiguration());
     }
 }

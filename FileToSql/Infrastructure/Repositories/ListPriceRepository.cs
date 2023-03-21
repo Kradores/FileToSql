@@ -22,7 +22,7 @@ public class ListPriceRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task BulkSaveAsync(IEnumerable<ListPrice> listPrices)
+    public async Task BulkInsertAsync(IEnumerable<ListPrice> listPrices)
     {
         await _dbContext.BulkInsertAsync(listPrices, o =>
         {
